@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Medical Records</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+
+body{
+    background:#f5f7fb;
+    padding:30px;
+    font-family:Arial,sans-serif;
+}
+
+.card-box{
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2 class="mb-4">
+<i class="fa-solid fa-file-medical"></i>
+Medical Records
+</h2>
+
+<div class="card-box">
+
+<h4>Add Medical Record</h4>
+
+<form>
+
+<div class="mb-3">
+<label>Patient Name</label>
+<input type="text" class="form-control">
+</div>
+
+<div class="mb-3">
+<label>Diagnosis</label>
+<textarea class="form-control"></textarea>
+</div>
+
+<div class="mb-3">
+<label>Prescription</label>
+<textarea class="form-control"></textarea>
+</div>
+
+<div class="mb-3">
+<label>Upload Report</label>
+<input type="file" class="form-control">
+</div>
+
+<button class="btn btn-primary">
+Save Record
+</button>
+
+</form>
+
+</div>
+
+<br>
+
+<div class="card-box">
+
+<h4>Patient Records</h4>
+
+<table class="table table-hover">
+
+<thead class="table-light">
+<tr>
+<th>ID</th>
+<th>Patient</th>
+<th>Diagnosis</th>
+<th>Prescription</th>
+<th>Date</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td>REC001</td>
+<td>Rahul Kumar</td>
+<td>Fever</td>
+<td>Paracetamol</td>
+<td>23-05-2026</td>
+</tr>
+
+<tr>
+<td>REC002</td>
+<td>Priya Sharma</td>
+<td>Skin Allergy</td>
+<td>Antihistamine</td>
+<td>22-05-2026</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</body>
+</html>
