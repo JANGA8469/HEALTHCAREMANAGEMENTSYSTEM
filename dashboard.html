@@ -64,7 +64,6 @@ body {
     text-align: center;
 }
 
-/* Appointment form */
 .form-box {
     background: white;
     padding: 20px;
@@ -82,6 +81,7 @@ table {
 
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
     <h3>🏥 HealthCare Pro</h3>
 
@@ -94,6 +94,7 @@ table {
     <a href="/logout">Logout</a>
 </div>
 
+<!-- MAIN CONTENT -->
 <div class="content">
 
     <div class="topbar">
@@ -129,16 +130,22 @@ table {
 
         <h4>Book Appointment</h4>
 
-        <form method="POST">
+        <form method="POST" action="/dashboard">
 
             <div class="row">
 
                 <div class="col-md-3">
-                    <input type="text" name="patient" class="form-control" placeholder="Patient Name" required>
+                    <input type="text" name="patient" class="form-control"
+                           placeholder="Patient Name" required>
                 </div>
 
                 <div class="col-md-3">
-                    <input type="text" name="doctor" class="form-control" placeholder="Doctor Name" required>
+                    <select name="doctor" class="form-control" required>
+                        <option value="">Select Doctor</option>
+                        <option>Dr. Rajesh Kumar</option>
+                        <option>Dr. Priya Sharma</option>
+                        <option>Dr. Arjun Reddy</option>
+                    </select>
                 </div>
 
                 <div class="col-md-3">
@@ -153,7 +160,9 @@ table {
 
             <br>
 
-            <button class="btn btn-primary">Book Appointment</button>
+            <button type="submit" class="btn btn-primary">
+                Book Appointment
+            </button>
 
         </form>
 
