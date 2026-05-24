@@ -1,10 +1,9 @@
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
 app = Flask(__name__)
-
-# 🔐 REQUIRED FOR SESSION (IMPORTANT)
 app.secret_key = "healthcare_secret_key"
 
 # ---------------- DATABASE INIT ----------------
@@ -53,6 +52,12 @@ init_db()
 def login_required():
     return "user" in session
 
+
+# ---------------- ROLE CHECK ----------------
+def admin_required():
+    return session.get("role") == "admin"
+
+
 # ---------------- LOGIN ----------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -75,6 +80,7 @@ def login():
         return render_template("login.html", error="Invalid credentials")
 
     return render_template("login.html")
+
 
 # ---------------- REGISTER ----------------
 @app.route("/register", methods=["GET", "POST"])
@@ -99,11 +105,13 @@ def register():
 
     return render_template("register.html")
 
+
 # ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
+
 
 # ---------------- HOME ----------------
 @app.route("/")
@@ -112,7 +120,8 @@ def home():
         return redirect("/login")
     return render_template("index.html")
 
-# ---------------- DASHBOARD (BOOK APPOINTMENT) ----------------
+
+# ---------------- DASHBOARD ----------------
 @app.route("/dashboard", methods=["GET", "POST"])
 def dashboard():
     if not login_required():
@@ -121,17 +130,25 @@ def dashboard():
     conn = sqlite3.connect("healthcare.db")
     c = conn.cursor()
 
-    # BOOK APPOINTMENT
+    # ONLY PATIENT CAN BOOK APPOINTMENT
     if request.method == "POST":
+
+        if session.get("role") != "patient":
+            return "Only patients can book appointments"
+
+        patient = request.form.get("patient")
+        doctor = request.form.get("doctor")
+        date = request.form.get("date")
+        time = request.form.get("time")
+
+        if not patient or not doctor or not date or not time:
+            return "Missing fields"
+
         c.execute("""
             INSERT INTO appointments (patient, doctor, date, time)
             VALUES (?, ?, ?, ?)
-        """, (
-            request.form["patient"],
-            request.form["doctor"],
-            request.form["date"],
-            request.form["time"]
-        ))
+        """, (patient, doctor, date, time))
+
         conn.commit()
 
     # STATS
@@ -144,7 +161,7 @@ def dashboard():
     c.execute("SELECT COUNT(*) FROM appointments")
     appointments_count = c.fetchone()[0]
 
-    # APPOINTMENTS LIST
+    # LIST
     c.execute("SELECT * FROM appointments ORDER BY id DESC")
     appointments = c.fetchall()
 
@@ -157,6 +174,7 @@ def dashboard():
         appointments=appointments,
         appointments_count=appointments_count
     )
+
 
 # ---------------- PATIENTS ----------------
 @app.route("/patients", methods=["GET", "POST"])
@@ -180,6 +198,7 @@ def patients():
 
     return render_template("patients.html", patients=data)
 
+
 # ---------------- DOCTORS ----------------
 @app.route("/doctors", methods=["GET", "POST"])
 def doctors():
@@ -201,6 +220,7 @@ def doctors():
 
     return render_template("doctors.html", doctors=data)
 
+
 # ---------------- APPOINTMENTS ----------------
 @app.route("/appointments")
 def appointments():
@@ -215,6 +235,7 @@ def appointments():
     conn.close()
 
     return render_template("appointments.html", appointments=data)
+
 
 # ---------------- RECORDS ----------------
 @app.route("/records", methods=["GET", "POST"])
@@ -239,6 +260,7 @@ def records():
 
     return render_template("records.html", records=data)
 
+
 # ---------------- BILLING ----------------
 @app.route("/billing", methods=["GET", "POST"])
 def billing():
@@ -262,8 +284,8 @@ def billing():
 
     return render_template("billing.html", bills=data)
 
-# ---------------- RUN ----------------
+
+# ---------------- RUN (PRODUCTION READY) ----------------
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 5001))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
