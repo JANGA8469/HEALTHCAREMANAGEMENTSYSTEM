@@ -3,6 +3,8 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+
+# 🔐 REQUIRED FOR SESSION (IMPORTANT)
 app.secret_key = "healthcare_secret_key"
 
 # ---------------- DATABASE INIT ----------------
@@ -51,7 +53,6 @@ init_db()
 def login_required():
     return "user" in session
 
-
 # ---------------- LOGIN ----------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -75,7 +76,6 @@ def login():
 
     return render_template("login.html")
 
-
 # ---------------- REGISTER ----------------
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -91,7 +91,7 @@ def register():
             c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
                       (username, password, role))
             conn.commit()
-        except sqlite3.IntegrityError:
+        except:
             return "Username already exists"
 
         conn.close()
@@ -99,13 +99,11 @@ def register():
 
     return render_template("register.html")
 
-
 # ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
-
 
 # ---------------- HOME ----------------
 @app.route("/")
@@ -114,8 +112,7 @@ def home():
         return redirect("/login")
     return render_template("index.html")
 
-
-# ---------------- DASHBOARD (WITH BOOKING) ----------------
+# ---------------- DASHBOARD (BOOK APPOINTMENT) ----------------
 @app.route("/dashboard", methods=["GET", "POST"])
 def dashboard():
     if not login_required():
@@ -124,7 +121,7 @@ def dashboard():
     conn = sqlite3.connect("healthcare.db")
     c = conn.cursor()
 
-    # BOOK APPOINTMENT FROM DASHBOARD
+    # BOOK APPOINTMENT
     if request.method == "POST":
         c.execute("""
             INSERT INTO appointments (patient, doctor, date, time)
@@ -147,7 +144,7 @@ def dashboard():
     c.execute("SELECT COUNT(*) FROM appointments")
     appointments_count = c.fetchone()[0]
 
-    # APPOINTMENT LIST
+    # APPOINTMENTS LIST
     c.execute("SELECT * FROM appointments ORDER BY id DESC")
     appointments = c.fetchall()
 
@@ -160,7 +157,6 @@ def dashboard():
         appointments=appointments,
         appointments_count=appointments_count
     )
-
 
 # ---------------- PATIENTS ----------------
 @app.route("/patients", methods=["GET", "POST"])
@@ -184,7 +180,6 @@ def patients():
 
     return render_template("patients.html", patients=data)
 
-
 # ---------------- DOCTORS ----------------
 @app.route("/doctors", methods=["GET", "POST"])
 def doctors():
@@ -206,7 +201,6 @@ def doctors():
 
     return render_template("doctors.html", doctors=data)
 
-
 # ---------------- APPOINTMENTS ----------------
 @app.route("/appointments")
 def appointments():
@@ -218,10 +212,9 @@ def appointments():
 
     c.execute("SELECT * FROM appointments ORDER BY id DESC")
     data = c.fetchall()
-
     conn.close()
-    return render_template("appointments.html", appointments=data)
 
+    return render_template("appointments.html", appointments=data)
 
 # ---------------- RECORDS ----------------
 @app.route("/records", methods=["GET", "POST"])
@@ -233,8 +226,7 @@ def records():
     c = conn.cursor()
 
     if request.method == "POST":
-        c.execute("""INSERT INTO records (patient, diagnosis, prescription)
-                     VALUES (?, ?, ?)""",
+        c.execute("INSERT INTO records (patient, diagnosis, prescription) VALUES (?, ?, ?)",
                   (request.form["patient"],
                    request.form["diagnosis"],
                    request.form["prescription"]))
@@ -247,7 +239,6 @@ def records():
 
     return render_template("records.html", records=data)
 
-
 # ---------------- BILLING ----------------
 @app.route("/billing", methods=["GET", "POST"])
 def billing():
@@ -258,8 +249,7 @@ def billing():
     c = conn.cursor()
 
     if request.method == "POST":
-        c.execute("""INSERT INTO billing (patient, amount, status)
-                     VALUES (?, ?, ?)""",
+        c.execute("INSERT INTO billing (patient, amount, status) VALUES (?, ?, ?)",
                   (request.form["patient"],
                    request.form["amount"],
                    request.form["status"]))
@@ -272,7 +262,8 @@ def billing():
 
     return render_template("billing.html", bills=data)
 
-
 # ---------------- RUN ----------------
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    import os
+    port = int(os.environ.get("PORT", 5001))
+    app.run(host="0.0.0.0", port=port, debug=True)
